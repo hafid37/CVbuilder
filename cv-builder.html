@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>سيرة — منشئ السيرة الذاتية</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1c2b39;
+    --paper:#f3efe4;
+    --paper2:#ece5d3;
+    --gold:#b8863b;
+    --teal:#1f5c56;
+    --line:#c9c2ae;
+    --danger:#a33d2f;
+    --panel:#fbfaf6;
+    --surface:#ffffff;
+    --text:#1c2b39;
+    --text-mute:#6b6252;
+    --bg1:#e9e3d2;
+    --bg2:#ddd5bd;
+    --topbar-bg:#1c2b39;
+    --shadow: 0 10px 30px -12px rgba(28,43,57,0.25);
+  }
+  body.dark{
+    --ink:#ece7d8;
+    --paper:#ece7d8;
+    --paper2:#2a3542;
+    --gold:#d9a75c;
+    --teal:#3d9186;
+    --line:#3a4552;
+    --danger:#e2685a;
+    --panel:#1e2731;
+    --surface:#242e3a;
+    --text:#ece7d8;
+    --text-mute:#9aa2ac;
+    --bg1:#0f151c;
+    --bg2:#161f29;
+    --topbar-bg:#0e141b;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background: linear-gradient(180deg,var(--bg1) 0%, var(--bg2) 100%);
+    color:var(--text);
+    font-family:'Inter',system-ui,sans-serif;
+    min-height:100vh;
+    transition: background .25s ease, color .25s ease;
+  }
+  body.rtl{ font-family:'Cairo','Inter',system-ui,sans-serif; }
+
+  .topbar{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:22px clamp(16px,4vw,48px);
+    border-bottom:1px solid var(--line);
+    background: var(--topbar-bg);
+    color:#f3efe4;
+    flex-wrap:wrap; gap:14px;
+  }
+  .brand{ display:flex; align-items:center; gap:12px; }
+  .brand .mark{
+    width:40px;height:40px;border-radius:50%;
+    border:1.5px solid var(--gold);
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Fraunces',serif; font-weight:600; font-size:15px; color:var(--gold);
+    flex-shrink:0;
+  }
+  body.rtl .brand .mark{ font-family:'Cairo',serif; }
+  .brand-text .t1{ font-family:'Fraunces',serif; font-size:20px; letter-spacing:.3px; line-height:1.1; }
+  body.rtl .brand-text .t1{ font-family:'Cairo',serif; font-weight:700; }
+  .brand-text .t2{ font-size:11.5px; opacity:.65; letter-spacing:.5px; margin-top:2px; }
+
+  .topbar-controls{ display:flex; align-items:center; gap:12px; }
+
+  .lang-select-wrap{
+    display:flex; align-items:center; gap:8px;
+    border:1.5px solid rgba(243,239,228,0.35); border-radius:24px;
+    padding:8px 14px; background: rgba(255,255,255,0.04);
+    transition: border-color .18s ease;
+  }
+  .lang-select-wrap:hover{ border-color: var(--gold); }
+  .lang-select-icon{ font-size:14px; opacity:.85; }
+  .lang-select{
+    appearance:none; -webkit-appearance:none; -moz-appearance:none;
+    background:transparent; border:none; color:#f3efe4;
+    font-family:'Fraunces',serif; font-weight:600; font-size:13.5px;
+    letter-spacing:.3px; cursor:pointer; padding-inline-end:18px;
+    background-image: linear-gradient(45deg, transparent 50%, #f3efe4 50%), linear-gradient(135deg, #f3efe4 50%, transparent 50%);
+    background-position: calc(100% - 4px) 55%, calc(100% - 9px) 55%;
+    background-size: 5px 5px, 5px 5px; background-repeat:no-repeat;
+  }
+  body.rtl .lang-select{
+    padding-inline-end:6px; padding-inline-start:18px;
+    background-position: 4px 55%, 9px 55%;
+  }
+  .lang-select option{ background: var(--topbar-bg); color:#f3efe4; font-family:'Inter',sans-serif; }
+  .lang-select:focus{ outline:none; }
+
+  .theme-toggle{
+    width:40px; height:40px; border-radius:50%;
+    border:1.5px solid rgba(243,239,228,0.35); background: rgba(255,255,255,0.04);
+    color:#f3efe4; cursor:pointer; font-size:16px;
+    display:flex; align-items:center; justify-content:center;
+    transition: all .18s ease;
+  }
+  .theme-toggle:hover{ border-color: var(--gold); color:var(--gold); transform: rotate(-10deg); }
+
+  .layout{
+    display:grid;
+    grid-template-columns: minmax(320px,420px) 1fr;
+    gap: 28px;
+    padding: 28px clamp(16px,4vw,48px) 60px;
+    align-items:start;
+  }
+  @media (max-width: 920px){
+    .layout{ grid-template-columns: 1fr; }
+  }
+
+  .panel{
+    background: var(--panel);
+    border:1px solid var(--line);
+    border-radius: 4px;
+    box-shadow: var(--shadow);
+    overflow:hidden;
+  }
+  .panel-head{
+    padding:16px 20px; border-bottom:1px solid var(--line);
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    background: linear-gradient(180deg, var(--surface) 0%, var(--panel) 100%);
+  }
+  .panel-head h2{
+    margin:0; font-family:'Fraunces',serif; font-size:17px; font-weight:600; color:var(--text);
+  }
+  body.rtl .panel-head h2{ font-family:'Cairo',serif; }
+  .copy-btn{
+    font-size:11.5px; border:1px solid var(--line); background:var(--surface); color:var(--text);
+    padding:6px 10px; border-radius:20px; cursor:pointer; opacity:.8;
+  }
+  .copy-btn:hover{ opacity:1; border-color:var(--gold); }
+
+  .tabs{ display:flex; border-bottom:1px solid var(--line); background:var(--surface); }
+  .tab{
+    flex:1; padding:12px 8px; text-align:center; font-size:12.5px; font-weight:600;
+    letter-spacing:.3px; cursor:pointer; color:var(--text-mute); border-bottom:2px solid transparent;
+  }
+  .tab.active{ color:var(--text); border-bottom-color:var(--gold); background:var(--panel); }
+
+  .form-section{ padding:20px 20px 26px; display:none; }
+  .form-section.active{ display:block; }
+
+  label{ display:block; font-size:11.5px; font-weight:600; color:var(--text-mute); margin:14px 0 5px; letter-spacing:.2px; }
+  label:first-child{ margin-top:0; }
+  input[type=text], input[type=email], input[type=tel], textarea, select{
+    width:100%; padding:9px 11px; border:1px solid var(--line); border-radius:3px;
+    font-family:inherit; font-size:13.5px; background:var(--surface); color:var(--text);
+  }
+  textarea{ resize:vertical; min-height:64px; line-height:1.5; }
+  input:focus, textarea:focus, select:focus{ outline:2px solid var(--gold); outline-offset:1px; border-color:var(--gold); }
+  .row2{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+
+  .entry{
+    border:1px solid var(--line); border-radius:4px; padding:14px 14px 8px; margin-bottom:14px; background:var(--surface);
+    position:relative;
+  }
+  .entry-remove{
+    position:absolute; top:8px; inset-inline-end:8px;
+    background:none; border:none; color:var(--danger); cursor:pointer; font-size:16px; line-height:1;
+    opacity:.55;
+  }
+  .entry-remove:hover{ opacity:1; }
+  .add-btn{
+    width:100%; padding:10px; border:1.5px dashed var(--line); background:transparent;
+    color:var(--text); border-radius:4px; cursor:pointer; font-size:12.5px; font-weight:600;
+    margin-top:4px;
+  }
+  .add-btn:hover{ border-color:var(--gold); color:var(--gold); }
+
+  .skills-tags, .langs-list{ display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
+  .tag{
+    display:flex; align-items:center; gap:6px; background:var(--paper2); border:1px solid var(--line);
+    padding:5px 10px; border-radius:20px; font-size:12.5px;
+  }
+  .tag button{ background:none; border:none; color:var(--danger); cursor:pointer; font-size:13px; padding:0; }
+  .tag-input-row{ display:flex; gap:8px; margin-top:8px; }
+  .tag-input-row input{ flex:1; }
+  .tag-input-row button{
+    padding:0 14px; border:1px solid var(--topbar-bg); background:var(--topbar-bg); color:#f3efe4;
+    border-radius:3px; cursor:pointer; font-size:12.5px; font-weight:600;
+  }
+
+  .lang-item{ display:flex; gap:8px; align-items:center; margin-bottom:8px; }
+  .lang-item input{ flex:1; }
+  .lang-item select{ width:130px; }
+  .lang-item button{ background:none;border:none;color:var(--danger);cursor:pointer;font-size:16px; }
+
+  .toolbar{ padding:16px 20px; border-top:1px solid var(--line); background:var(--panel); }
+  .download-btn{
+    width:100%; padding:13px; background:var(--teal); color:#fff; border:none; border-radius:4px;
+    font-size:14px; font-weight:700; letter-spacing:.3px; cursor:pointer; font-family:inherit;
+    display:flex; align-items:center; justify-content:center; gap:8px;
+  }
+  .download-btn:hover{ filter:brightness(1.08); }
+
+  /* PREVIEW */
+  .preview-wrap{ position:sticky; top:20px; }
+  .cv-page{
+    background:#fff; width:100%; max-width:760px; margin:0 auto;
+    aspect-ratio: 210/297;
+    box-shadow: var(--shadow);
+    position:relative; overflow:hidden;
+    border:1px solid #ddd6c2;
+  }
+  .cv-page{
+    /* the printed sheet always reads as light paper, no matter the app theme */
+    --ink:#1c2b39; --gold:#b8863b; --teal:#1f5c56; --line:#c9c2ae; --paper2:#ece5d3;
+  }
+  .fold-corner{
+    position:absolute; top:0; inset-inline-end:0; width:46px; height:46px;
+    background: linear-gradient(135deg, transparent 49%, #e3dcc7 50%, #d3caab 100%);
+  }
+  body:not(.rtl) .fold-corner{ transform: scaleX(-1); }
+  .cv-inner{ padding:44px 46px 30px; height:100%; overflow:auto; }
+  .cv-head{ display:flex; justify-content:space-between; align-items:flex-start; gap:16px; border-bottom:2.5px solid var(--ink); padding-bottom:16px; margin-bottom:20px; }
+  .cv-name{ font-family:'Fraunces',serif; font-size:30px; font-weight:600; color:var(--ink); line-height:1.15; }
+  body.rtl .cv-name{ font-family:'Cairo',serif; font-weight:800; }
+  .cv-title{ font-size:13.5px; color:var(--gold); font-weight:600; letter-spacing:.4px; margin-top:4px; text-transform:uppercase; }
+  body.rtl .cv-title{ text-transform:none; }
+  .cv-contact{ font-size:11.5px; color:#54514a; text-align:end; line-height:1.9; white-space:nowrap; }
+  .stamp-seal{
+    width:58px;height:58px;border-radius:50%; border:2px solid var(--teal); color:var(--teal);
+    display:flex; align-items:center; justify-content:center; font-family:'Fraunces',serif; font-weight:700;
+    font-size:12px; transform:rotate(-8deg); flex-shrink:0; letter-spacing:.5px; opacity:.85;
+  }
+  body.rtl .stamp-seal{ font-family:'Cairo',serif; }
+
+  .cv-section{ margin-bottom:18px; }
+  .cv-h{
+    font-size:11.5px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--ink);
+    display:flex; align-items:center; gap:10px; margin-bottom:9px;
+  }
+  body.rtl .cv-h{ letter-spacing:.3px; text-transform:none; font-weight:800; }
+  .cv-h::after{ content:''; flex:1; height:1px; background:var(--line); }
+  .cv-summary{ font-size:12.8px; line-height:1.75; color:#33302a; }
+  .cv-entry{ margin-bottom:12px; }
+  .cv-entry-top{ display:flex; justify-content:space-between; gap:10px; font-size:13px; }
+  .cv-entry-title{ font-weight:700; color:var(--ink); }
+  .cv-entry-org{ color:var(--gold); font-weight:600; }
+  .cv-entry-period{ font-size:11px; color:#7a7364; white-space:nowrap; }
+  .cv-entry-desc{ font-size:12px; color:#4a463c; line-height:1.65; margin-top:3px; }
+  .cv-skills{ display:flex; flex-wrap:wrap; gap:6px; }
+  .cv-skill{ font-size:11px; border:1px solid var(--line); padding:3px 10px; border-radius:20px; color:#3f3b32; }
+  .cv-langs{ display:flex; flex-wrap:wrap; gap:14px; font-size:12px; }
+  .cv-lang b{ color:var(--ink); }
+  .cv-lang span{ color:#8a8371; }
+  .empty-hint{ color:#a8a08c; font-size:12px; font-style:italic; }
+
+  @media print{
+    body *{ visibility:hidden; }
+    .cv-page, .cv-page *{ visibility:visible; }
+    .cv-page{ position:absolute; top:0; left:0; box-shadow:none; border:none; width:210mm; aspect-ratio:auto; height:297mm; max-width:none; }
+    .cv-inner{ height:auto; }
+  }
+</style>
+</head>
+<body class="rtl">
+
+<div class="topbar">
+  <div class="brand">
+    <div class="mark" id="brandMark">سي</div>
+    <div class="brand-text">
+      <div class="t1" id="brandTitle">سيرة</div>
+      <div class="t2" id="brandTag">منشئ السيرة الذاتية — ٣ لغات</div>
+    </div>
+  </div>
+  <div class="topbar-controls">
+    <div class="lang-select-wrap">
+      <span class="lang-select-icon">🌐</span>
+      <select id="langSelect" class="lang-select">
+        <option value="ar">العربية</option>
+        <option value="fr">Français</option>
+        <option value="en">English</option>
+      </select>
+    </div>
+    <button class="theme-toggle" id="themeToggle" title="Dark / Light" aria-label="Toggle dark mode">
+      <span id="themeIcon">☾</span>
+    </button>
+  </div>
+</div>
+
+<div class="layout">
+  <!-- FORM PANEL -->
+  <div class="panel">
+    <div class="panel-head">
+      <h2 id="panelHeadTitle">بيانات السيرة الذاتية</h2>
+      <button class="copy-btn" id="copyBtn">نسخ من لغة أخرى</button>
+    </div>
+    <div class="tabs">
+      <div class="tab active" data-tab="personal" id="tabPersonal">شخصي</div>
+      <div class="tab" data-tab="experience" id="tabExperience">الخبرة</div>
+      <div class="tab" data-tab="education" id="tabEducation">التعليم</div>
+      <div class="tab" data-tab="extras" id="tabExtras">المهارات واللغات</div>
+    </div>
+
+    <!-- PERSONAL -->
+    <div class="form-section active" data-section="personal">
+      <label id="lblName">الاسم الكامل</label>
+      <input type="text" id="f_name">
+      <label id="lblTitle">المسمى الوظيفي</label>
+      <input type="text" id="f_title">
+      <div class="row2">
+        <div>
+          <label id="lblEmail">البريد الإلكتروني</label>
+          <input type="email" id="f_email">
+        </div>
+        <div>
+          <label id="lblPhone">الهاتف</label>
+          <input type="tel" id="f_phone">
+        </div>
+      </div>
+      <label id="lblLocation">المدينة / البلد</label>
+      <input type="text" id="f_location">
+      <label id="lblSummary">نبذة مختصرة</label>
+      <textarea id="f_summary" rows="4"></textarea>
+    </div>
+
+    <!-- EXPERIENCE -->
+    <div class="form-section" data-section="experience">
+      <div id="experienceList"></div>
+      <button class="add-btn" id="addExperience">+ <span id="addExpText">إضافة خبرة عملية</span></button>
+    </div>
+
+    <!-- EDUCATION -->
+    <div class="form-section" data-section="education">
+      <div id="educationList"></div>
+      <button class="add-btn" id="addEducation">+ <span id="addEduText">إضافة مؤهل دراسي</span></button>
+    </div>
+
+    <!-- EXTRAS -->
+    <div class="form-section" data-section="extras">
+      <label id="lblSkills">المهارات</label>
+      <div class="skills-tags" id="skillsTags"></div>
+      <div class="tag-input-row">
+        <input type="text" id="skillInput" placeholder="">
+        <button id="addSkillBtn">+</button>
+      </div>
+
+      <label id="lblLangs" style="margin-top:22px;">اللغات</label>
+      <div class="langs-list" id="langsList"></div>
+      <button class="add-btn" id="addLangBtn">+ <span id="addLangText">إضافة لغة</span></button>
+    </div>
+
+    <div class="toolbar">
+      <button class="download-btn" id="downloadBtn">⬇ <span id="downloadText">تحميل PDF</span></button>
+    </div>
+  </div>
+
+  <!-- PREVIEW -->
+  <div class="preview-wrap">
+    <div class="cv-page" id="cvPage">
+      <div class="fold-corner"></div>
+      <div class="cv-inner">
+        <div class="cv-head">
+          <div>
+            <div class="cv-name" id="p_name">اسمك الكامل</div>
+            <div class="cv-title" id="p_title">المسمى الوظيفي</div>
+          </div>
+          <div class="stamp-seal" id="p_sealText">AR</div>
+        </div>
+        <div class="cv-head" style="border:none; padding:0; margin:-10px 0 20px;">
+          <div class="cv-contact" id="p_contact" style="text-align:start;"></div>
+          <div></div>
+        </div>
+
+        <div class="cv-section" id="sec_summary">
+          <div class="cv-h" id="h_summary">نبذة</div>
+          <div class="cv-summary" id="p_summary"></div>
+        </div>
+
+        <div class="cv-section" id="sec_experience">
+          <div class="cv-h" id="h_experience">الخبرة العملية</div>
+          <div id="p_experience"></div>
+        </div>
+
+        <div class="cv-section" id="sec_education">
+          <div class="cv-h" id="h_education">التعليم</div>
+          <div id="p_education"></div>
+        </div>
+
+        <div class="cv-section" id="sec_skills">
+          <div class="cv-h" id="h_skills">المهارات</div>
+          <div class="cv-skills" id="p_skills"></div>
+        </div>
+
+        <div class="cv-section" id="sec_langs">
+          <div class="cv-h" id="h_langs">اللغات</div>
+          <div class="cv-langs" id="p_langs"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const LANGS = ['ar','fr','en'];
+let current = 'ar';
+
+function blankData(){
+  return { name:'', title:'', email:'', phone:'', location:'', summary:'',
+    experience:[], education:[], skills:[], languages:[] };
+}
+const state = { ar: blankData(), fr: blankData(), en: blankData() };
+let uid = 1;
+const nid = () => 'i'+(uid++);
+
+// ---------- UI dictionary ----------
+const UI = {
+  ar:{ dir:'rtl', font:'Cairo', brandMark:'سي', brandTitle:'سيرة', brandTag:'منشئ السيرة الذاتية — ٣ لغات',
+    panelHead:'بيانات السيرة الذاتية', copy:'نسخ من لغة أخرى',
+    tabs:{personal:'شخصي', experience:'الخبرة', education:'التعليم', extras:'المهارات واللغات'},
+    lbl:{name:'الاسم الكامل', title:'المسمى الوظيفي', email:'البريد الإلكتروني', phone:'الهاتف',
+      location:'المدينة / البلد', summary:'نبذة مختصرة', skills:'المهارات', langs:'اللغات'},
+    ph:{name:'مثال: أمين بلحاج', title:'مثال: مهندس برمجيات', email:'name@example.com', phone:'+213 5xx xx xx xx',
+      location:'الجزائر العاصمة، الجزائر', summary:'اكتب نبذة مختصرة عن مسارك المهني وأهم إنجازاتك...',
+      skill:'أضف مهارة واضغط إدخال', expTitle:'المسمى الوظيفي', expOrg:'اسم الشركة', expPeriod:'٢٠٢٢ — الآن',
+      expDesc:'وصف موجز للمهام والإنجازات...', eduDegree:'الشهادة / التخصص', eduOrg:'اسم المؤسسة التعليمية',
+      eduPeriod:'٢٠١٨ — ٢٠٢١', langName:'مثال: الإنجليزية'},
+    addExp:'إضافة خبرة عملية', addEdu:'إضافة مؤهل دراسي', addLang:'إضافة لغة', download:'تحميل PDF',
+    remove:'حذف', level:['مبتدئ','متوسط','جيد','بطلاقة','لغة أم'],
+    sec:{summary:'نبذة', experience:'الخبرة العملية', education:'التعليم', skills:'المهارات', langs:'اللغات'},
+    emptyName:'اسمك الكامل', emptyTitle:'المسمى الوظيفي', seal:'AR'
+  },
+  fr:{ dir:'ltr', font:'Inter', brandMark:'CV', brandTitle:'Sira', brandTag:'Générateur de CV — 3 langues',
+    panelHead:'Informations du CV', copy:'Copier une autre langue',
+    tabs:{personal:'Profil', experience:'Expérience', education:'Formation', extras:'Compétences & langues'},
+    lbl:{name:'Nom complet', title:'Titre du poste', email:'E-mail', phone:'Téléphone',
+      location:'Ville / Pays', summary:'Résumé professionnel', skills:'Compétences', langs:'Langues'},
+    ph:{name:'ex : Amine Belhadj', title:'ex : Ingénieur logiciel', email:'nom@example.com', phone:'+213 5xx xx xx xx',
+      location:'Alger, Algérie', summary:'Décrivez brièvement votre parcours et vos réalisations clés...',
+      skill:'Ajoutez une compétence et appuyez sur Entrée', expTitle:'Intitulé du poste', expOrg:"Nom de l'entreprise",
+      expPeriod:'2022 — Présent', expDesc:'Brève description des missions et réalisations...',
+      eduDegree:'Diplôme / Spécialité', eduOrg:"Nom de l'établissement", eduPeriod:'2018 — 2021',
+      langName:'ex : Anglais'},
+    addExp:'Ajouter une expérience', addEdu:'Ajouter une formation', addLang:'Ajouter une langue', download:'Télécharger en PDF',
+    remove:'Supprimer', level:['Débutant','Intermédiaire','Bon niveau','Courant','Langue maternelle'],
+    sec:{summary:'Résumé', experience:'Expérience professionnelle', education:'Formation', skills:'Compétences', langs:'Langues'},
+    emptyName:'Votre nom complet', emptyTitle:'Titre du poste', seal:'FR'
+  },
+  en:{ dir:'ltr', font:'Inter', brandMark:'CV', brandTitle:'Sira', brandTag:'Resume builder — 3 languages',
+    panelHead:'Resume details', copy:'Copy from another language',
+    tabs:{personal:'Personal', experience:'Experience', education:'Education', extras:'Skills & languages'},
+    lbl:{name:'Full name', title:'Job title', email:'Email', phone:'Phone',
+      location:'City / Country', summary:'Professional summary', skills:'Skills', langs:'Languages'},
+    ph:{name:'e.g. Amine Belhadj', title:'e.g. Software Engineer', email:'name@example.com', phone:'+213 5xx xx xx xx',
+      location:'Algiers, Algeria', summary:'Briefly describe your background and key achievements...',
+      skill:'Add a skill and press Enter', expTitle:'Job title', expOrg:'Company name', expPeriod:'2022 — Present',
+      expDesc:'Brief description of duties and achievements...', eduDegree:'Degree / Field', eduOrg:'Institution name',
+      eduPeriod:'2018 — 2021', langName:'e.g. English'},
+    addExp:'Add work experience', addEdu:'Add education', addLang:'Add language', download:'Download PDF',
+    remove:'Remove', level:['Beginner','Intermediate','Good','Fluent','Native'],
+    sec:{summary:'Summary', experience:'Work Experience', education:'Education', skills:'Skills', langs:'Languages'},
+    emptyName:'Your full name', emptyTitle:'Job title', seal:'EN'
+  }
+};
+
+let activeTab = 'personal';
+
+// ---------- rendering the form (rebuilt on language switch) ----------
+function renderChrome(){
+  const t = UI[current];
+  document.body.className = t.dir === 'rtl' ? 'rtl' : '';
+  document.documentElement.lang = current;
+  document.documentElement.dir = t.dir;
+
+  document.getElementById('brandMark').textContent = t.brandMark;
+  document.getElementById('brandTitle').textContent = t.brandTitle;
+  document.getElementById('brandTag').textContent = t.brandTag;
+  document.getElementById('panelHeadTitle').textContent = t.panelHead;
+  document.getElementById('copyBtn').textContent = t.copy;
+  document.getElementById('downloadText').textContent = t.download;
+
+  document.getElementById('tabPersonal').textContent = t.tabs.personal;
+  document.getElementById('tabExperience').textContent = t.tabs.experience;
+  document.getElementById('tabEducation').textContent = t.tabs.education;
+  document.getElementById('tabExtras').textContent = t.tabs.extras;
+
+  document.getElementById('lblName').textContent = t.lbl.name;
+  document.getElementById('lblTitle').textContent = t.lbl.title;
+  document.getElementById('lblEmail').textContent = t.lbl.email;
+  document.getElementById('lblPhone').textContent = t.lbl.phone;
+  document.getElementById('lblLocation').textContent = t.lbl.location;
+  document.getElementById('lblSummary').textContent = t.lbl.summary;
+  document.getElementById('lblSkills').textContent = t.lbl.skills;
+  document.getElementById('lblLangs').textContent = t.lbl.langs;
+
+  document.getElementById('f_name').placeholder = t.ph.name;
+  document.getElementById('f_title').placeholder = t.ph.title;
+  document.getElementById('f_email').placeholder = t.ph.email;
+  document.getElementById('f_phone').placeholder = t.ph.phone;
+  document.getElementById('f_location').placeholder = t.ph.location;
+  document.getElementById('f_summary').placeholder = t.ph.summary;
+  document.getElementById('skillInput').placeholder = t.ph.skill;
+
+  document.getElementById('addExpText').textContent = t.addExp;
+  document.getElementById('addEduText').textContent = t.addEdu;
+  document.getElementById('addLangText').textContent = t.addLang;
+
+  document.getElementById('langSelect').value = current;
+
+  document.querySelectorAll('.tab').forEach(tab=>{
+    tab.classList.toggle('active', tab.dataset.tab === activeTab);
+  });
+  document.querySelectorAll('.form-section').forEach(sec=>{
+    sec.classList.toggle('active', sec.dataset.section === activeTab);
+  });
+}
+
+function loadFormFromState(){
+  const d = state[current];
+  document.getElementById('f_name').value = d.name;
+  document.getElementById('f_title').value = d.title;
+  document.getElementById('f_email').value = d.email;
+  document.getElementById('f_phone').value = d.phone;
+  document.getElementById('f_location').value = d.location;
+  document.getElementById('f_summary').value = d.summary;
+  renderExperienceForm();
+  renderEducationForm();
+  renderSkillsForm();
+  renderLangsForm();
+}
+
+// ---------- experience ----------
+function renderExperienceForm(){
+  const t = UI[current];
+  const wrap = document.getElementById('experienceList');
+  wrap.innerHTML = '';
+  state[current].experience.forEach(item=>{
+    const div = document.createElement('div');
+    div.className = 'entry';
+    div.innerHTML = `
+      <button class="entry-remove" data-id="${item.id}" data-kind="experience" title="${t.remove}">×</button>
+      <label>${t.ph.expTitle}</label>
+      <input type="text" data-field="title" value="${escapeHtml(item.title)}" placeholder="${t.ph.expTitle}">
+      <div class="row2">
+        <div><label>${t.ph.expOrg}</label><input type="text" data-field="org" value="${escapeHtml(item.org)}" placeholder="${t.ph.expOrg}"></div>
+        <div><label>${t.ph.expPeriod}</label><input type="text" data-field="period" value="${escapeHtml(item.period)}" placeholder="${t.ph.expPeriod}"></div>
+      </div>
+      <label>${current==='ar'?'الوصف':current==='fr'?'Description':'Description'}</label>
+      <textarea data-field="desc" rows="3" placeholder="${t.ph.expDesc}">${escapeHtml(item.desc)}</textarea>
+    `;
+    div.querySelectorAll('input,textarea').forEach(inp=>{
+      inp.addEventListener('input', ()=>{ item[inp.dataset.field] = inp.value; renderPreview(); });
+    });
+    wrap.appendChild(div);
+  });
+}
+document.getElementById('addExperience').addEventListener('click', ()=>{
+  state[current].experience.push({id:nid(), title:'', org:'', period:'', desc:''});
+  renderExperienceForm(); renderPreview();
+});
+
+// ---------- education ----------
+function renderEducationForm(){
+  const t = UI[current];
+  const wrap = document.getElementById('educationList');
+  wrap.innerHTML = '';
+  state[current].education.forEach(item=>{
+    const div = document.createElement('div');
+    div.className = 'entry';
+    div.innerHTML = `
+      <button class="entry-remove" data-id="${item.id}" data-kind="education" title="${t.remove}">×</button>
+      <label>${t.ph.eduDegree}</label>
+      <input type="text" data-field="degree" value="${escapeHtml(item.degree)}" placeholder="${t.ph.eduDegree}">
+      <div class="row2">
+        <div><label>${t.ph.eduOrg}</label><input type="text" data-field="org" value="${escapeHtml(item.org)}" placeholder="${t.ph.eduOrg}"></div>
+        <div><label>${t.ph.eduPeriod}</label><input type="text" data-field="period" value="${escapeHtml(item.period)}" placeholder="${t.ph.eduPeriod}"></div>
+      </div>
+    `;
+    div.querySelectorAll('input').forEach(inp=>{
+      inp.addEventListener('input', ()=>{ item[inp.dataset.field] = inp.value; renderPreview(); });
+    });
+    wrap.appendChild(div);
+  });
+}
+document.getElementById('addEducation').addEventListener('click', ()=>{
+  state[current].education.push({id:nid(), degree:'', org:'', period:''});
+  renderEducationForm(); renderPreview();
+});
+
+// ---------- skills ----------
+function renderSkillsForm(){
+  const wrap = document.getElementById('skillsTags');
+  wrap.innerHTML = '';
+  state[current].skills.forEach((skill, idx)=>{
+    const tag = document.createElement('div');
+    tag.className = 'tag';
+    tag.innerHTML = `<span>${escapeHtml(skill)}</span><button data-idx="${idx}">×</button>`;
+    tag.querySelector('button').addEventListener('click', ()=>{
+      state[current].skills.splice(idx,1); renderSkillsForm(); renderPreview();
+    });
+    wrap.appendChild(tag);
+  });
+}
+function addSkillFromInput(){
+  const inp = document.getElementById('skillInput');
+  const val = inp.value.trim();
+  if(val){ state[current].skills.push(val); inp.value=''; renderSkillsForm(); renderPreview(); }
+}
+document.getElementById('addSkillBtn').addEventListener('click', addSkillFromInput);
+document.getElementById('skillInput').addEventListener('keydown', e=>{
+  if(e.key === 'Enter'){ e.preventDefault(); addSkillFromInput(); }
+});
+
+// ---------- languages ----------
+function renderLangsForm(){
+  const t = UI[current];
+  const wrap = document.getElementById('langsList');
+  wrap.innerHTML = '';
+  state[current].languages.forEach(item=>{
+    const row = document.createElement('div');
+    row.className = 'lang-item';
+    const levelOptions = t.level.map((lv,i)=>`<option value="${i}" ${item.level==i?'selected':''}>${lv}</option>`).join('');
+    row.innerHTML = `
+      <input type="text" value="${escapeHtml(item.name)}" placeholder="${t.ph.langName}" data-field="name">
+      <select data-field="level">${levelOptions}</select>
+      <button data-id="${item.id}">×</button>
+    `;
+    row.querySelector('input').addEventListener('input', e=>{ item.name = e.target.value; renderPreview(); });
+    row.querySelector('select').addEventListener('change', e=>{ item.level = +e.target.value; renderPreview(); });
+    row.querySelector('button').addEventListener('click', ()=>{
+      state[current].languages = state[current].languages.filter(l=>l.id!==item.id);
+      renderLangsForm(); renderPreview();
+    });
+    wrap.appendChild(row);
+  });
+}
+document.getElementById('addLangBtn').addEventListener('click', ()=>{
+  state[current].languages.push({id:nid(), name:'', level:2});
+  renderLangsForm(); renderPreview();
+});
+
+// delegate remove buttons for experience/education (re-render replaces nodes, so simple approach: attach via renderX functions above already added listeners per item render, but remove buttons need listener too)
+document.addEventListener('click', (e)=>{
+  if(e.target.classList.contains('entry-remove')){
+    const id = e.target.dataset.id, kind = e.target.dataset.kind;
+    state[current][kind] = state[current][kind].filter(x=>x.id!==id);
+    if(kind==='experience') renderExperienceForm(); else renderEducationForm();
+    renderPreview();
+  }
+});
+
+// ---------- personal field bindings ----------
+['name','title','email','phone','location','summary'].forEach(f=>{
+  document.getElementById('f_'+f).addEventListener('input', e=>{
+    state[current][f] = e.target.value; renderPreview();
+  });
+});
+
+// ---------- tabs ----------
+document.querySelectorAll('.tab').forEach(tab=>{
+  tab.addEventListener('click', ()=>{
+    activeTab = tab.dataset.tab;
+    document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active', x===tab));
+    document.querySelectorAll('.form-section').forEach(sec=>sec.classList.toggle('active', sec.dataset.section===activeTab));
+  });
+});
+
+// ---------- language dropdown ----------
+document.getElementById('langSelect').addEventListener('change', (e)=>{
+  current = e.target.value;
+  renderChrome();
+  loadFormFromState();
+  renderPreview();
+});
+
+// ---------- dark / light mode ----------
+const themeToggle = document.getElementById('themeToggle');
+const themeIcon = document.getElementById('themeIcon');
+function applyTheme(mode){
+  document.body.classList.toggle('dark', mode === 'dark');
+  themeIcon.textContent = mode === 'dark' ? '☀' : '☾';
+  themeToggle.setAttribute('aria-pressed', mode === 'dark');
+}
+let theme = (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+applyTheme(theme);
+themeToggle.addEventListener('click', ()=>{
+  theme = theme === 'dark' ? 'light' : 'dark';
+  applyTheme(theme);
+});
+
+// ---------- copy from another language ----------
+document.getElementById('copyBtn').addEventListener('click', ()=>{
+  const others = LANGS.filter(l=>l!==current);
+  const labelMap = {ar:'العربية', fr:'Français', en:'English'};
+  const promptText = current==='ar' ? `انسخ المحتوى من: ${others.map(o=>labelMap[o]).join(' / ')}`
+                     : current==='fr' ? `Copier depuis : ${others.map(o=>labelMap[o]).join(' / ')}`
+                     : `Copy from: ${others.map(o=>labelMap[o]).join(' / ')}`;
+  const choice = prompt(promptText, labelMap[others[0]]);
+  if(!choice) return;
+  const match = others.find(o => labelMap[o].toLowerCase().startsWith(choice.trim().toLowerCase()) || o===choice.trim().toLowerCase());
+  if(!match){ return; }
+  const src = state[match];
+  state[current] = JSON.parse(JSON.stringify(src));
+  // regenerate fresh ids so future edits don't collide
+  state[current].experience.forEach(x=>x.id=nid());
+  state[current].education.forEach(x=>x.id=nid());
+  state[current].languages.forEach(x=>x.id=nid());
+  loadFormFromState();
+  renderPreview();
+});
+
+// ---------- preview ----------
+function escapeHtml(str){
+  return (str||'').replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+function renderPreview(){
+  const t = UI[current];
+  const d = state[current];
+  document.getElementById('cvPage').dir = t.dir;
+  document.getElementById('cvPage').style.fontFamily = t.dir==='rtl' ? "'Cairo',sans-serif" : "'Inter',sans-serif";
+
+  document.getElementById('p_name').textContent = d.name || t.emptyName;
+  document.getElementById('p_title').textContent = d.title || t.emptyTitle;
+  document.getElementById('p_sealText').textContent = t.seal;
+
+  const contactParts = [d.email, d.phone, d.location].filter(Boolean);
+  document.getElementById('p_contact').innerHTML = contactParts.map(escapeHtml).join('<br>');
+
+  document.getElementById('h_summary').textContent = t.sec.summary;
+  document.getElementById('h_experience').textContent = t.sec.experience;
+  document.getElementById('h_education').textContent = t.sec.education;
+  document.getElementById('h_skills').textContent = t.sec.skills;
+  document.getElementById('h_langs').textContent = t.sec.langs;
+
+  document.getElementById('sec_summary').style.display = d.summary ? '' : 'none';
+  document.getElementById('p_summary').textContent = d.summary;
+
+  document.getElementById('sec_experience').style.display = d.experience.length ? '' : 'none';
+  document.getElementById('p_experience').innerHTML = d.experience.map(x=>`
+    <div class="cv-entry">
+      <div class="cv-entry-top">
+        <div><span class="cv-entry-title">${escapeHtml(x.title)}</span>${x.org?' — <span class="cv-entry-org">'+escapeHtml(x.org)+'</span>':''}</div>
+        <div class="cv-entry-period">${escapeHtml(x.period)}</div>
+      </div>
+      ${x.desc?'<div class="cv-entry-desc">'+escapeHtml(x.desc)+'</div>':''}
+    </div>
+  `).join('');
+
+  document.getElementById('sec_education').style.display = d.education.length ? '' : 'none';
+  document.getElementById('p_education').innerHTML = d.education.map(x=>`
+    <div class="cv-entry">
+      <div class="cv-entry-top">
+        <div><span class="cv-entry-title">${escapeHtml(x.degree)}</span>${x.org?' — <span class="cv-entry-org">'+escapeHtml(x.org)+'</span>':''}</div>
+        <div class="cv-entry-period">${escapeHtml(x.period)}</div>
+      </div>
+    </div>
+  `).join('');
+
+  document.getElementById('sec_skills').style.display = d.skills.length ? '' : 'none';
+  document.getElementById('p_skills').innerHTML = d.skills.map(s=>`<span class="cv-skill">${escapeHtml(s)}</span>`).join('');
+
+  document.getElementById('sec_langs').style.display = d.languages.length ? '' : 'none';
+  document.getElementById('p_langs').innerHTML = d.languages.map(l=>`
+    <div class="cv-lang"><b>${escapeHtml(l.name)}</b> <span>· ${t.level[l.level]}</span></div>
+  `).join('');
+}
+
+document.getElementById('downloadBtn').addEventListener('click', ()=>{
+  window.print();
+});
+
+// ---------- init with sample placeholders so the preview isn't empty on first load ----------
+renderChrome();
+loadFormFromState();
+renderPreview();
+</script>
+</body>
+</html>
